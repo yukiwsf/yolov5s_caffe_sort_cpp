@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
         /* sort track */
         for(int j = 0; j < objects.size(); ++j) {
             TrackingBox trackingBox;
-            if(objects[j].clsId == 0) {  // cls == "person"
+            if(objects[j].clsId == 2 || objects[j].clsId == 5 || objects[j].clsId == 7) {  // cls == "car" || "bus" || "truck"
                 trackingBox.frame = i;
                 trackingBox.id = -1;  // objects[j].clsId;
                 trackingBox.box = objects[j].bbox;
