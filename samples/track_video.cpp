@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
 
     /* init video capture and writer */
     cv::VideoCapture inputVideo;          
-    cv::String videoInputPath = "../data/test_video_dst.mp4";    
+    cv::String videoInputPath = "../data/test_video.mp4";    
     inputVideo.open(videoInputPath);
     if(!inputVideo.isOpened()) {
         std::cout << "read video failed!" << std::endl;
