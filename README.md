@@ -1,5 +1,5 @@
 # YOLOv5s + SORT with Caffe (CPU Inference) Demo  
-tracking for vehicles demo.
+Tracking for vehicles demo.
 ## Reference
 Caffe:  
 https://github.com/BVLC/caffe
