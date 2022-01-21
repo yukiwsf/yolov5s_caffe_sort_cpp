@@ -21,3 +21,10 @@ https://github.com/mcximing/sort-cpp
 ## How to use
 1. Compile Caffe and OpenCV dynamic link library(xxx.so, Ubuntu18.04), then put them into lib directories.
 2. Use CMake to build
+
+
+## YOLOv5s Caffe Pretrain Model
+```
+Link: https://pan.baidu.com/s/1TxrP5hsSpFzMECjk1nKR2A   
+Password: b1l5  
+```
