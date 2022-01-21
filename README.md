@@ -23,7 +23,7 @@ https://github.com/mcximing/sort-cpp
 2. Use CMake to build
 
 
-## YOLOv5s Caffe Pretrain Model
+## YOLOv5s Caffe Pretrain Model (on COCO2017)
 ```
 Link: https://pan.baidu.com/s/1TxrP5hsSpFzMECjk1nKR2A   
 Password: b1l5  
