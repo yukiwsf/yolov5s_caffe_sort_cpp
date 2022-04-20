@@ -13,7 +13,7 @@
 
 constexpr int YOLO_INPUT_WIDTH = 640, YOLO_INPUT_HEIGHT = 640,  FPN_STRIDES = 3, ANCHOR_NUM = 3, NUM_CLASS = 80, MAX_DET = 100;
 const float CONF_THRESHOLD = 0.5, NMS_THRESHOLD = 0.5;    
-const bool IS_NMS = false; 
+const bool IS_NMS = true; 
 
 // #define TO_TXT 
 
