@@ -15,7 +15,7 @@ aux_source_directory(${SRC_DIR} SRC)
 add_executable(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/samples/track_video.cpp ${SRC} ${CAFFE_INCLUDE_DIR}/caffe/proto/caffe.pb.cc)
 
 # find_package(OpenCV REQUIRED)
-target_include_directories(${PROJECT_NAME} PUBLIC ${OPENCV_INCLUDE_DIR} ${CAFFE_INCLUDE_DIR} ${INCLUDE_DIR} /usr/local/cuda-10.1/include)
+target_include_directories(${PROJECT_NAME} PUBLIC ${OPENCV_INCLUDE_DIR} ${CAFFE_INCLUDE_DIR} ${INCLUDE_DIR})
 
 # target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBRARIES})
 target_link_libraries(${PROJECT_NAME}  ${OPENCV_LIB_DIR}/libopencv_core.so 

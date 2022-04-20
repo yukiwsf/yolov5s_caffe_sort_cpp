@@ -1,4 +1,4 @@
-#include "Hungarian.h"
+#include "hungarian.h"
 
 HungarianAlgorithm::HungarianAlgorithm(){}
 HungarianAlgorithm::~HungarianAlgorithm(){}

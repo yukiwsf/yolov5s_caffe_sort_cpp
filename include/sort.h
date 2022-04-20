@@ -7,19 +7,18 @@
 #include <iterator>
 #include <algorithm>
 
-#include "KalmanTracker.h"
-#include "Hungarian.h"
+#include "kalman_tracker.h"
+#include "hungarian.h"
 
-#define MAX_AGE 1
-#define MIN_HITS 3
-#define IOU_THRESH 0.3
+const int MAX_AGE = 1, MIN_HITS = 3;
+const float IOU_THRESH = 0.3;
 
 /* store tracking result */
-typedef struct TrackingBox {
+struct TrackingBox {
 	int frame;
 	int id;
     cv::Rect2d box;
-} TrackingBox;
+};
 
 /* sort tracking */
 class Tracker {

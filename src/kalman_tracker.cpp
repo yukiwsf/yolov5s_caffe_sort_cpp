@@ -1,6 +1,4 @@
-// KalmanTracker.cpp: KalmanTracker Class Implementation Declaration
-
-#include "KalmanTracker.h"
+#include "kalman_tracker.h"
 #include <cmath>
 
 int KalmanTracker::kf_count = 0;  // tracking id relies on this, so we have to reset it in each seq.

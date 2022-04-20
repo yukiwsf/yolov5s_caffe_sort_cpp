@@ -1,8 +1,5 @@
-#ifndef KALMANTRACKER_H
-#define KALMANTRACKER_H
-
-// #ifndef KALMAN_H
-// #define KALMAN_H 2
+#ifndef KALMAN_TRACKER_H
+#define KALMAN_TRACKER_H
 
 #include "opencv2/video/tracking.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -59,6 +56,4 @@ private:
 	std::vector<StateType> m_history;
 };
 
-// #endif  // #ifndef KALMAN_H
-
-#endif  // #ifndef KALMANTRACKER_H
+#endif  // #ifndef KALMAN_TRACKER_H

@@ -11,17 +11,13 @@
 #include "opencv2/highgui.hpp"
 #include "caffe/caffe.hpp"
 
-#define YOLO_INPUT_WIDTH 640
-#define YOLO_INPUT_HEIGHT 640
-#define FPN_STRIDES 3
-#define ANCHOR_NUM 3
-#define NUM_CLASS 80
-#define CONF_THRESHOLD 0.5
-#define IS_NMS 1
-#define NMS_THRESHOLD 0.5
-#define MAX_DET 100
+constexpr int YOLO_INPUT_WIDTH = 640, YOLO_INPUT_HEIGHT = 640, 
+              FPN_STRIDES = 3, ANCHOR_NUM = 3, 
+              NUM_CLASS = 80, CONF_THRESHOLD = 0.5, NMS_THRESHOLD = 0.5,
+              MAX_DET = 100;
+const bool IS_NMS = false; 
 
-// #define TO_TXT 1
+// #define TO_TXT 
 
 /* class name */
 extern const char *clsName[NUM_CLASS];
@@ -30,11 +26,11 @@ extern const char *clsName[NUM_CLASS];
 extern const std::vector<std::vector<cv::Size2f>> anchors;
 
 /* store object-detection result information */
-typedef struct ObjectDetectionInformation {
+struct ObjInfo {
     int clsId;
     float confidence;
     cv::Rect bbox;
-} ObjInfo;
+};
 
 /* main yolov5s class */
 class Detector {
