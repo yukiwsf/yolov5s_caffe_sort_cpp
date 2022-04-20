@@ -241,7 +241,7 @@ void Detector::Detect(const cv::Mat &originalImage, std::vector<ObjInfo> &detRes
         fout << std::endl;
     }
     fout.close();
-    #endif
+    #endif  // #ifdef TO_TXT
     /* post-process */
     int originalImageWidth = originalImage.cols;
     int originalImageHeight = originalImage.rows;
