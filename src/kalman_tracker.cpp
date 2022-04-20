@@ -3,7 +3,7 @@
 
 int KalmanTracker::kf_count = 0;  // tracking id relies on this, so we have to reset it in each seq.
 
-// initialize Kalman filter
+// Initialize kalman filter
 void KalmanTracker::init_kf(StateType stateMat) {
 	int stateNum = 7;
 	int measureNum = 4;
