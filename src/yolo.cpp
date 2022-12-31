@@ -1,9 +1,46 @@
 #include "yolo.h"
 
+bool LetterBox(const cv::Mat &src, cv::Mat &dst, float &d_w, float &d_h, float &ratio) {
+    if(src.empty()) {
+        std::cout << "LetterBox input image is empty" << std::endl;
+        return false;
+    }
+    int in_w = src.cols;
+    int in_h = src.rows;
+    int out_w = YOLO_INPUT_WIDTH;
+    int out_h = YOLO_INPUT_HEIGHT;
+    // choose smaller scale
+    float ratio_h = (float)out_h / in_h;
+    float ratio_w = (float)out_w / in_w;
+    ratio = std::min(ratio_h, ratio_w);
+    int resize_w = std::round(in_w * ratio);
+    int resize_h = std::round(in_h * ratio);
+    float pad_w = out_w - resize_w;
+    float pad_h = out_h - resize_h;
+    // resize
+    cv::resize(src, dst, cv::Size(resize_w, resize_h));
+    pad_w /= 2;
+    pad_h /= 2;
+    // padding gray
+    int top = std::round(pad_h - 0.1);
+    int bottom = std::round(pad_h + 0.1);
+    int left = std::round(pad_w - 0.1);
+    int right = std::round(pad_w + 0.1);
+    cv::copyMakeBorder(dst, dst, top, bottom, left, right, cv::BORDER_CONSTANT, cv::Scalar(114, 114, 114));
+    d_w = pad_w;  // d_w = (out_w - in_w * ratio) / 2;
+    d_h = pad_h;  // d_h = (out_h - in_h * ratio) / 2;
+    return true;
+}
+
 /* pre-process: resize, hwc2chw, bgr2rgb, /=255.0 */
-void PreProcess(const cv::Mat &src, cv::Mat &dst) {
+void PreProcess(const cv::Mat &src, cv::Mat &dst, float &deltaW, float &deltaH, float &resizeRatio, bool _scaleFill) {
     std::cout << "\nstart yolov5s pre-process." << std::endl;
-    cv::resize(src, dst, cv::Size(YOLO_INPUT_WIDTH, YOLO_INPUT_HEIGHT));  // resize
+    if(_scaleFill) {
+        LetterBox(src, dst, deltaW, deltaH, resizeRatio);
+    }
+    else {
+        cv::resize(src, dst, cv::Size(YOLO_INPUT_WIDTH, YOLO_INPUT_HEIGHT));  // resize
+    }
     cv::Mat dstCopy = dst.clone();
     int cnt = 0;
     for(int k = 0; k < dst.channels(); ++k) {
@@ -64,11 +101,15 @@ inline void Softmax(std::vector<float> &classes) {
 }
 
 /* process box in case of crossing the image border*/
-inline cv::Rect BoxBorderProcess(const cv::Rect &box, const int imgWidth, const int imgHeight) {
+inline cv::Rect BoxBorderProcess(const cv::Rect &box, const int imgWidth, const int imgHeight, float deltaW, float deltaH, bool _scaleFill) {
     int xmin = box.x;
-    int ymin = box.y;
+    int ymin = box.y;  
+    if(_scaleFill) {
+        xmin -= deltaW;
+        ymin -= deltaH;
+    }
     int xmax = xmin + box.width;
-    int ymax = ymin + box.height;
+    int ymax = ymin + box.height; 
     xmin = std::max(0, xmin);
     xmin = std::min(imgWidth, xmin);
     ymin = std::max(0, ymin);
@@ -148,7 +189,7 @@ void DetectLayer(std::vector< caffe::Blob< float >* > &outputs, std::vector<int>
     }
 }
 
-void PostProcess(std::vector< caffe::Blob< float >* > &outputs, std::vector<ObjInfo> &detResults, int originalImageWidth, int originalImageHeight) {
+void PostProcess(std::vector< caffe::Blob< float >* > &outputs, std::vector<ObjInfo> &detResults, int originalImageWidth, int originalImageHeight, float resizeRatio, float deltaW, float deltaH, bool _scaleFill) {
     /* post-process */
     std::cout << "start yolov5s post-process." << std::endl;
     // indexes, boxes and confidences have the same element index
@@ -170,18 +211,26 @@ void PostProcess(std::vector< caffe::Blob< float >* > &outputs, std::vector<ObjI
     if(indices.size() > MAX_DET) indices.resize(MAX_DET);
     /* get yolov5s result */
     std::cout << "-get yolov5s result..." << std::endl;
-    float widthScale = (float)originalImageWidth / YOLO_INPUT_WIDTH;  // int divide int will cut-off to int, use int divide float or float divide int or float divide float
-    float heightScale = (float)originalImageHeight / YOLO_INPUT_HEIGHT;  // ((float)a) / b
+    float widthScale = (float)YOLO_INPUT_WIDTH / originalImageWidth;  // int divide int will cut-off to int, use int divide float or float divide int or float divide float
+    float heightScale = (float)YOLO_INPUT_HEIGHT / originalImageHeight;  // ((float)a) / b
     for(size_t i = 0; i < indices.size(); ++i) {  // for every predicted box
         int idx = indices[i];  // indexes/boxes/confidences index 
         // process every box boundary according to input img size.
-        auto newBox = BoxBorderProcess(boxes[idx], YOLO_INPUT_WIDTH, YOLO_INPUT_HEIGHT);  
+        auto newBox = BoxBorderProcess(boxes[idx], YOLO_INPUT_WIDTH, YOLO_INPUT_HEIGHT, deltaW, deltaH, _scaleFill);  
         ObjInfo object;
         // remap box from input img size to orginal img size
-        object.bbox.x = (newBox.x * widthScale);
-        object.bbox.y = (newBox.y * heightScale);
-        object.bbox.width = (newBox.width * widthScale);
-        object.bbox.height = (newBox.height * heightScale);
+        if(_scaleFill) {
+            object.bbox.x = newBox.x / resizeRatio;
+            object.bbox.y = newBox.y / resizeRatio;
+            object.bbox.width = newBox.width / resizeRatio;
+            object.bbox.height = newBox.height / resizeRatio;
+        }
+        else {
+            object.bbox.x = (newBox.x / widthScale);
+            object.bbox.y = (newBox.y / heightScale);
+            object.bbox.width = (newBox.width / widthScale);
+            object.bbox.height = (newBox.height / heightScale);            
+        }
         object.confidence = confidences[idx];
         object.clsId = indexes[idx];
         detResults.push_back(object);
@@ -190,20 +239,25 @@ void PostProcess(std::vector< caffe::Blob< float >* > &outputs, std::vector<ObjI
     std::cout << "end yolov5s post-process." << std::endl;
 }
 
-Detector::Detector(std::string prototxt, std::string caffemodel) {
+Detector::Detector(std::string prototxt, std::string caffemodel, bool _scaleFill) {
     /* set device */
     caffe::Caffe::set_mode(caffe::Caffe::CPU);
     /* load and init network */
     this->net.reset(new caffe::Net<float>(prototxt, caffe::TEST));
     this->net->CopyTrainedLayersFrom(caffemodel);
-    std::cout << "net inputs number is " << this->net->num_inputs();
-    std::cout << "net outputs number is " << this->net->num_outputs();
+    std::cout << "net inputs number is " << this->net->num_inputs() << std::endl;
+    std::cout << "net outputs number is " << this->net->num_outputs() << std::endl;
     if(this->net->num_inputs() != 1) 
-        std::cerr << "network should have exactly one input.";
+        std::cerr << "network should have exactly one input." << std::endl;
     this->inputBlob = this->net->input_blobs()[0];
-    std::cout << "input data layer channels is " << this->inputBlob->channels();
-    std::cout << "input data layer width is " << this->inputBlob->width();
-    std::cout << "input data layer height is " << this->inputBlob->height();
+    std::cout << "input data layer channels is " << this->inputBlob->channels() << std::endl;
+    std::cout << "input data layer width is " << this->inputBlob->width() << std::endl;
+    std::cout << "input data layer height is " << this->inputBlob->height() << std::endl;
+
+    scaleFill = _scaleFill;
+    delta_w = 0.0;
+    delta_h = 0.0;
+    resize_ratio = 1.0;
 }
 
 Detector::~Detector() {
@@ -215,7 +269,7 @@ Detector::~Detector() {
 void Detector::Detect(const cv::Mat &originalImage, std::vector<ObjInfo> &detResults) {
     /* pre-process */
     cv::Mat imagePreprocess; 
-    PreProcess(originalImage, imagePreprocess);  // hwc2chw, bgr2rgb
+    PreProcess(originalImage, imagePreprocess, delta_w, delta_h, resize_ratio, scaleFill);  // hwc2chw, bgr2rgb
     
     /* copy data to input blob */
     memcpy((void*)this->inputBlob->mutable_cpu_data(), (void*)imagePreprocess.data, sizeof(float) * this->inputBlob->count());
@@ -245,5 +299,5 @@ void Detector::Detect(const cv::Mat &originalImage, std::vector<ObjInfo> &detRes
     /* post-process */
     int originalImageWidth = originalImage.cols;
     int originalImageHeight = originalImage.rows;
-    PostProcess(outputBlobs, detResults, originalImageWidth, originalImageHeight);
+    PostProcess(outputBlobs, detResults, originalImageWidth, originalImageHeight, resize_ratio, delta_w, delta_h, scaleFill);
 }
