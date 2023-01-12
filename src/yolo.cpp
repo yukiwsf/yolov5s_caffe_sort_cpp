@@ -101,7 +101,7 @@ void Softmax(std::vector<float> &classes) {
 }
 
 /* process box in case of crossing the image border*/
-inline cv::Rect BoxBorderProcess(const cv::Rect &box, const int imgWidth, const int imgHeight, float deltaW, float deltaH, bool _scaleFill) {
+cv::Rect BoxBorderProcess(const cv::Rect &box, const int imgWidth, const int imgHeight, float deltaW, float deltaH, bool _scaleFill) {
     int xmin = box.x;
     int ymin = box.y;  
     if(_scaleFill) {
