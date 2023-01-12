@@ -156,11 +156,11 @@ void DetectLayer(std::vector< caffe::Blob< float >* > &outputs, std::vector<int>
                         float h = std::pow(Sigmoid(th) * 2, 2) * anchors[stage][na].height;
                         /* predicted box classification */
                         std::vector<float> classes(NUM_CLASS);
-                        for (int i = 0; i < NUM_CLASS; ++i) {
+                        for(int i = 0; i < NUM_CLASS; ++i) {
                             int classIdx = output->width() * output->height() * (channel + 5 + i) + output->width() * cy + cx;
-                            classes[i] = data[classIdx];
+                            classes[i] = Sigmoid(data[classIdx]);
                         }
-                        Softmax(classes);
+                        // Softmax(classes);
                         auto maxIterator = std::max_element(classes.begin(), classes.end());
                         int maxIndex = (int)(maxIterator - classes.begin());
                         if(NUM_CLASS > 1) {
