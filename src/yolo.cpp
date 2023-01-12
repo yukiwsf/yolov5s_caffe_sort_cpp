@@ -78,7 +78,7 @@ inline float Sigmoid(float x) {
 }
 
 /* softmax */
-inline void Softmax(std::vector<float> &classes) {
+void Softmax(std::vector<float> &classes) {
     float sum = 0;
     std::transform(
                    classes.begin(), 
@@ -163,7 +163,7 @@ void DetectLayer(std::vector< caffe::Blob< float >* > &outputs, std::vector<int>
                         Softmax(classes);
                         auto maxIterator = std::max_element(classes.begin(), classes.end());
                         int maxIndex = (int)(maxIterator - classes.begin());
-                        if (NUM_CLASS > 1) {
+                        if(NUM_CLASS > 1) {
                             confidence *= classes[maxIndex];
                         }
                         /* predicted box regression */
